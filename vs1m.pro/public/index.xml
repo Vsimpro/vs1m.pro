@@ -10,58 +10,9 @@
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Every Second Counts</title>
-      <link>http://localhost:1313/posts/every-second-counts-copy-2/</link>
-      <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/every-second-counts-copy-2/</guid>
-      <description>This is a test summary!</description>
-    </item>
-    <item>
-      <title>Every Second Counts</title>
-      <link>http://localhost:1313/posts/every-second-counts-copy-3/</link>
-      <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/every-second-counts-copy-3/</guid>
-      <description>This is a test summary!</description>
-    </item>
-    <item>
-      <title>Every Second Counts</title>
-      <link>http://localhost:1313/posts/every-second-counts-copy-4/</link>
-      <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/every-second-counts-copy-4/</guid>
-      <description>This is a test summary!</description>
-    </item>
-    <item>
-      <title>Every Second Counts</title>
-      <link>http://localhost:1313/posts/every-second-counts-copy-5/</link>
-      <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/every-second-counts-copy-5/</guid>
-      <description>This is a test summary!</description>
-    </item>
-    <item>
-      <title>Every Second Counts</title>
       <link>http://localhost:1313/posts/every-second-counts/</link>
       <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/posts/every-second-counts/</guid>
-      <description>This is a test summary!</description>
-    </item>
-    <item>
-      <title>The Bot-anist</title>
-      <link>http://localhost:1313/posts/botanist-copy-2/</link>
-      <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/botanist-copy-2/</guid>
-      <description>This is a test summary!</description>
-    </item>
-    <item>
-      <title>The Bot-anist</title>
-      <link>http://localhost:1313/posts/botanist-copy-3/</link>
-      <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/botanist-copy-3/</guid>
-      <description>This is a test summary!</description>
-    </item>
-    <item>
-      <title>The Bot-anist</title>
-      <link>http://localhost:1313/posts/botanist-copy-4/</link>
-      <pubDate>Wed, 26 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/botanist-copy-4/</guid>
       <description>This is a test summary!</description>
     </item>
     <item>

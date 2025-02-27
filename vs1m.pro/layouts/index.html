@@ -18,7 +18,7 @@
             <header>
                 <nav>
                     <ul class="nav-ul">
-                        <li class="nav-li"><a href="{{ .Site.BaseURL }}">~/index.html</a></li>
+                        <p class="special">my other stuff ->&nbsp</p>
                         <li class="nav-li"><a href="https://vsim.xyz">/vsim.xyz/index.html</a></li>
                         <li class="nav-li"><a href="https://kiosk.vsim.xyz">/vsim.xyz/kiosk.html</a></li>
                         <li class="nav-li"><a href="https://github.com/Vsimpro">/github.com/Vsimpro</a></li>
@@ -47,7 +47,7 @@
                     </p>
                 </div>
                 <div class="aboutme-pic">
-                    <img src="https://vsim.xyz/img/cobolmestari.png" width="256">
+                    <img src="/images/profile.jpg" width="256">
             
                 </div>
             </div>
@@ -110,6 +110,7 @@
 }
 
 body {
+    overflow: hidden;
     color: var(--jet-dark);
 
     background-color: var(--jet-dark);
@@ -124,17 +125,19 @@ body {
 }
 
 .body-grid {
-    margin-top: 4%;
+    user-select: none;
+    margin-top: 2%;
 
-    justify-content: center;
     display: grid;
-    grid-template-columns: 2% 80% 5%;
+    grid-template-columns: 25dvw 65dvw 5dvw;
 }
 
 .main {
+    width: 800px;
 
     margin:   0;
-    padding: 4%;
+    padding: 3%;
+    padding-top: 1%;
 
     border-radius: 4px;
     border: 1px solid var(--dim-grey);
@@ -154,6 +157,7 @@ body {
 }
 
 .aboutme {
+    font-size: 14px;
     margin-top: 5%;
 }
 
@@ -161,7 +165,7 @@ body {
     width: 50%;
     margin: auto;
 
-    padding-left: 110px;
+    padding-left: 70px;
 }
 
 .blog-grid {
@@ -182,6 +186,7 @@ a {
     text-decoration: none;
 }
 
+
 .blog-card {
     user-select: none;
     padding: 0;
@@ -193,12 +198,12 @@ a {
     border-radius: 4px;
     border: 1px solid var(--jet-dark);
 
-    background-color: var(--green);
+    background-color: var(--teal);
     box-shadow: 2px 2px 0px var(--dim-grey);
 }
 
 .blog-card:hover {
-    background-color: var(--teal);
+    background-color: var(--blue);
     box-shadow: 
        -2px -2px 2px var(--grey-white),
         3px  3px 2px var(--dim-grey);
@@ -227,7 +232,7 @@ a {
 .nav-li {
     margin-right: 5px;
 
-    background-color: var(--sunglow);
+    background-color: var(--pink);
     padding: 10px;
 
     border-radius: 2px;
@@ -252,8 +257,57 @@ img {
     padding: 0;
 
     border-radius: 2px;
-    border: 2px solid var(--jet-darker);
-    box-shadow: 4px 4px var(--davy-grey);
+
+    border:     2px solid var(--jet-darker);
+    box-shadow: 8px 8px var(--davy-grey);
+}
+
+@media all and (orientation:portrait) {
+
+    .body-grid {
+        display: inline-block;
+    }
+
+    .aboutme-grid {
+        display: inline-block;
+    }
+
+    
+    .main {
+        width: 92dvw;
+
+        margin:   0;
+        padding: 3%;
+        padding-top: 1%;
+
+        border-radius: 4px;
+        border: 1px solid var(--dim-grey);
+
+        box-shadow: 
+            6px  4px   0px var(--jet-darker),
+            10px 8px   4px var(--jet-darker),
+            12px 10px 12px var(--jet-darker);
+
+        background-color: var(--off-white);
+        overflow: hidden;
+    }
+
+}
+
+@media (orientation:portrait) and (max-width: 780px) {
+    .special {
+        display: none;
+    }
+
+    nav {
+        display: none;
+    }
+
+    .nav-li {
+        font-size: 12px;
+        height: 20px;
+    }
+
 }
 
 </style>
