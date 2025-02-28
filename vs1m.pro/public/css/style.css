@@ -36,15 +36,8 @@ body {
     background-size: 18px 18px;
 }
 
-.body-grid {
-    user-select: none;
-    margin-top: 2%;
-
-    display: grid;
-    grid-template-columns: 25dvw 65dvw 5dvw;
-}
-
 .main {
+    user-select: none;
     width: 800px;
 
     margin:   0;
@@ -61,6 +54,11 @@ body {
 
     background-color: var(--off-white);
     overflow: hidden;
+
+    margin-top: 2%;
+
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .aboutme-grid {
@@ -175,6 +173,10 @@ img {
 }
 
 @media all and (orientation:portrait) {
+
+    a {
+        color: var(--off-white)
+    }
 
     .body-grid {
         display: inline-block;
