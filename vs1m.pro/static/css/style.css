@@ -64,11 +64,14 @@ body {
 .aboutme-grid {
     display: grid;
     grid-template-columns: 60% 20%;
+    grid-template-areas: 
+    'aboutme aboutme-pic';
 }
 
 .aboutme {
     font-size: 14px;
     margin-top: 5%;
+    grid-area: aboutme;
 }
 
 .aboutme-pic {
@@ -76,6 +79,7 @@ body {
     margin: auto;
 
     padding-left: 70px;
+    grid-area: aboutme-pic;
 }
 
 .blog-grid {
@@ -182,8 +186,21 @@ img {
         display: inline-block;
     }
 
+    .aboutme {
+        max-width: 600px;
+        margin: auto;
+    }
+
+    .aboutme a {
+        color: var(--jet-dark);
+    }
+
     .aboutme-grid {
-        display: inline-block;
+        display: grid;
+        grid-template-areas: 
+        'aboutme-pic'
+        'aboutme';
+        grid-template-columns: 1fr;
     }
 
     
@@ -206,10 +223,20 @@ img {
         overflow: hidden;
     }
 
+    .aboutme-pic {
+        margin-top: 3%;
+        width: auto;
+        padding: 0;
+    }
+
 }
 
 @media (orientation:portrait) and (max-width: 780px) {
     
+    .aboutme a, a {
+        color: var(--off-white)
+    }
+
     body {
         color: var(--off-white);
         background-color: var(--jet-dark);
@@ -238,9 +265,4 @@ img {
     .blog-card:hover {
         box-shadow: none;
     }
-
-    .aboutme-pic {
-        display: none;
-    }
-
 }
