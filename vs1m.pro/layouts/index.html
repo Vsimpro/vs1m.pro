@@ -58,13 +58,17 @@
             <div class="blog-grid">
                 {{ range where .Site.Pages "Section" "posts" }}
                     {{ if not .IsSection }}
+                    
                     <div class="blog-card">
-                        <h3>
-                            <a href="{{ .RelPermalink }}">{{ .Title }}</a>
-                        </h3>
-                        <p>{{ .Summary }}</p>
-                        <a class="call2action" href="{{ .RelPermalink }}">read the post!</a>
+                        <a class="title" href="{{ .RelPermalink }}">
+                            <h3>
+                                {{ .Title }}
+                            </h3>
+                            <p>{{ .Summary }}</p>
+                            <a class="call2action" href="{{ .RelPermalink }}">read the post!</a>
+                        </a>
                     </div>
+                    
                     {{ end }}
                 {{ end }}
             </div>

@@ -7,20 +7,100 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-
     <!-- Main Content -->
   <div class="main">
+    
+  <nav>
+    <a class="back" href="/"> back to ./home </a>
+  </nav>
+
+    <div class="table-of-contents">
+      <h2>
+        Table of contents
+      </h2>
+      <ul id="table">
+      </ul>
+    </div>
+
     {{ block "main" . }} 
     {{ end }}
+    
+    <!-- Footer Section -->
+    <footer>
+      <p>&copy; {{ now.Format "2006" }} {{ .Site.Title }}. All Rights Reserved.</p>
+    </footer>
+
   </div>
-
-  <!-- Footer Section -->
-  <footer>
-    <p>&copy; {{ now.Format "2006" }} {{ .Site.Title }}. All Rights Reserved.</p>
-  </footer>
-
 </body>
 </html>
+<script>
 
+var tableOfContents = document.getElementById("table");
+var headers         = document.getElementsByTagName("h2");
+
+for (var i = 1; i < headers.length; i++) {
+  
+  
+  let list_item       = document.createElement("li");
+  let list_link      = document.createElement("a");
+
+
+  let item_link       = headers[i].id;
+
+  list_link.href      = "#" + item_link;
+  list_link.innerText = headers[i].innerText;
+
+  list_item.appendChild( list_link );
+  tableOfContents.appendChild( list_item );
+}
+
+</script>
 <style>
+
+h1,h2,h3 {
+
+  margin-top: 50px;
+
+  font-size: x-large;
+  
+  width: auto;
+  border-bottom: 1px solid black;
+  
+}
+
+h1 {
+  font-size: xx-large;
+}
+
+h3 {
+  font-size: large;
+  border-bottom: none;
+  margin-top: 20px;
+}
+
+ul {
+  list-style-type: " - ";
+}
+
+@media all and (orientation:portrait) {
+  a {
+      color: black;
+      text-decoration: underline;
+  }
+
+  a:hover {
+    font-weight: bolder;
+  }
+
+}
+
+@media (orientation:portrait) and (max-width: 780px) {
+
+  a {
+      color: white;
+      text-decoration: underline;
+  }
+
+}
+
 </style>

@@ -7,9 +7,21 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-
     
   <div class="main">
+    
+  <nav>
+    <a class="back" href="/"> back to ./home </a>
+  </nav>
+
+    <div class="table-of-contents">
+      <h2>
+        Table of contents
+      </h2>
+      <ul id="table">
+      </ul>
+    </div>
+
     
     
   <article class="cf pa3 pa4-m pa4-l">
@@ -23,15 +35,67 @@
     </section>
   </div>
 
+    
+    
+    <footer>
+      <p>&copy; 2025 vs1m.pro. All Rights Reserved.</p>
+    </footer>
+
   </div>
-
-  
-  <footer>
-    <p>&copy; 2025 vs1m.pro. All Rights Reserved.</p>
-  </footer>
-
 </body>
 </html>
+<script>
 
+var tableOfContents = document.getElementById("table");
+var headers         = document.getElementsByTagName("h2");
+
+for (var i = 1; i < headers.length; i++) {
+  
+  let list_item       = document.createElement("li");
+  list_item.innerText = headers[i].innerText;
+
+  console.log( list_item.id )
+
+  tableOfContents.appendChild( list_item )
+}
+
+</script>
 <style>
+
+
+h1,h2,h3 {
+
+  margin-top: 50px;
+
+  font-size: x-large;
+  
+  width: auto;
+  border-bottom: 1px solid black;
+  
+}
+
+h1 {
+  font-size: xx-large;
+}
+
+h3 {
+  font-size: large;
+  border-bottom: none;
+  margin-top: 20px;
+}
+
+@media all and (orientation:portrait) {
+
+  a {
+      color: black;
+      text-decoration: underline;
+  }
+  
+  a:hover {
+    color: darkblue;
+    text-shadow: 0px 0px 2px lightgrey;
+    text-decoration: underline;
+  }
+}
+
 </style>

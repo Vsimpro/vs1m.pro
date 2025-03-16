@@ -3,3 +3,8 @@ languageCode = 'en-us'
 title = 'vs1m.pro'
 
 theme = "ananke"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
