@@ -36,6 +36,7 @@
   </div>
 
     
+    <a class="back" href="#"> back to up </a>
     
     <footer>
       <p>&copy; 2025 vs1m.pro. All Rights Reserved.</p>
@@ -51,17 +52,22 @@ var headers         = document.getElementsByTagName("h2");
 
 for (var i = 1; i < headers.length; i++) {
   
+  
   let list_item       = document.createElement("li");
-  list_item.innerText = headers[i].innerText;
+  let list_link      = document.createElement("a");
 
-  console.log( list_item.id )
 
-  tableOfContents.appendChild( list_item )
+  let item_link       = headers[i].id;
+
+  list_link.href      = "#" + item_link;
+  list_link.innerText = headers[i].innerText;
+
+  list_item.appendChild( list_link );
+  tableOfContents.appendChild( list_item );
 }
 
 </script>
 <style>
-
 
 h1,h2,h3 {
 
@@ -84,18 +90,29 @@ h3 {
   margin-top: 20px;
 }
 
-@media all and (orientation:portrait) {
+ul {
+  list-style-type: " - ";
+}
 
+@media all and (orientation:portrait) {
   a {
       color: black;
       text-decoration: underline;
   }
-  
+
   a:hover {
-    color: darkblue;
-    text-shadow: 0px 0px 2px lightgrey;
-    text-decoration: underline;
+    font-weight: bolder;
   }
+
+}
+
+@media (orientation:portrait) and (max-width: 780px) {
+
+  a {
+      color: white;
+      text-decoration: underline;
+  }
+
 }
 
 </style>

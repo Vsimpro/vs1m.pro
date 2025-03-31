@@ -4,7 +4,7 @@ summary: "Revealing secrets of software with a watch"
 draft: false
 ---
 
-If you've ever wondered if milliseconds could be used to expose secrets, this one is for you.
+If you've ever wondered how milliseconds could be used to expose secrets, this one is for you.
 
 In this article, I dive into how timing based side-channel attacks can be leveraged in application security. I'll show you how tiny delays in system responses can leak valuable information, like open ports and database records. Let's walk through some theory, and real world examples on actual applications. 
 
@@ -16,7 +16,7 @@ When finding exploits, be it a computer system, a videogame, or a tabletop game,
 
 In games of incomplete information (poker, counter-strike, cybersecurity) it's your task as a player to not only keep your information exposure to a minimum, but to try and gain information where possible. 
 
-Playing these games is exciting. What simple things can we use to gain knowledge, and how could we leverage them? When it comes to hacking, we always think about new clever ways to exploit systems. Do we leverage _every_ piece of information we have to the fullest? For example, how long things take?  
+Playing these games is exciting. What simple things can we use to gain knowledge, and how could we leverage that? When it comes to hacking, we always think about new clever ways to exploit systems. Do we leverage _every_ piece of information we have to the fullest? For example, how long things take?  
 
 ## What are time-based sidechannel attacks? {#introduction}
 
@@ -25,15 +25,15 @@ To understand what time-based sidechannel attacks are, first we must understand 
 `".. a side-channel attack is any attack based on extra information  that can be gathered because of the fundamental way a computer protocol or algorithm is implemented, rather than flaws in the design of the protocol or algorithm itself."`
 
 Timing based sidechannel is a version of this, where we measure the amount it takes to do a certain computation. When programming, each line of code is translated into instructions for the CPU, when the code is ran. Some more directly than others, but it all comes down to calculations on the CPU. 
-Some of these calculations take longer time than ohters, for example comparing two strings to each other is much faster than checking if another string appears as a subset of an other.
+Some of these calculations take longer time than others, for example comparing two strings to each other is much faster than checking if a string appears as a subset of another.
 
-But string comparisons in the end are quite fast. There is an excellent video [All in the timing: How side channel attacks work](https://youtu.be/JW81H0R4Chg?si=PuUeqseJPqYuK_Fl){:target="_blank"} explaining the basics, where it's mentioned that these calculations take several hundred nanoseconds. Unless you're in a very specific environment, measuring everything with the margin several hundred nanoseconds simply isn't possible.
+But string comparisons in the end are quite fast. There is an excellent video [All in the timing: How side channel attacks work](https://youtu.be/JW81H0R4Chg?si=PuUeqseJPqYuK_Fl) explaining the basics, where it's mentioned that these calculations take several hundred nanoseconds. Unless you're in a very specific environment, measuring everything with the margin several hundred nanoseconds simply isn't possible.
 
-When you start to introduce connections, reading, writing & more data you can get up to milliseconds of time taken on differnt computations & connections. These are things we can measure and leverage.
+When you start to introduce connections, reading, writing & more data you can get up to milliseconds of time taken on different computations & connections. These are things we can measure and leverage.
 
 ## Previous work (kiosk.vsim.xyz) {#related-work}
 
-For my kiosk.vsim.xyz tooling, I tried to find a good way to determine if ports are open on devices just using JavaScript. If you want to read more into it, you can read the blogpost here: https://blog.vsim.xyz/
+For my [kiosk.vsim.xyz](https://kiosk.vsim.xyz/) tooling, I tried to find a good way to determine if ports are open on devices just using JavaScript. If you want to read more into it, you can read the blogpost here: [blog.vsim.xyz](https://blog.vsim.xyz/)
 
 Turns out, you can use http requests to determine if an port is open or not. Looking at the time it takes for the request to resolve implies if the port is open or not. How? If the port is open, and a service behind it responds or cuts the connection due to protocol mismatch, the time to resolve the request is relatively fast. If there is no service responding, the request takes a lot longer to resolve. If the time to resolve is _really_ slow, we can deduct that the host is unreachable from the device you're running the scan on. 
 
@@ -43,11 +43,9 @@ Ever since creating that tool, I have been really curious about using time-based
 
 ## Mining data with latencies, in theory {#theory}
 
-I have prepared a database with mock data into it. We can execute a query to find a certain email from the database, mimicking an application looking for an user, for example. The search itself will take time, because the rows are not indexed some more, but the returning of the results is what is the most interesting here. We can see, that if a query is empty, it resolves quicker than if the query returns data in it. 
+I have prepared a database with mock data into it. We can execute a query to find a certain email from the database, mimicking an application looking for an user, for example. The search itself will take time, because the rows are not indexed. But the returning of the results is what is the most interesting here. In theory, if a query is empty, it resolves quicker than if the query returns data in it. 
 
-!! IMAGE !!
-
-We can see that the time it takes for a query to resolve is different if a certain data exists. Using this mechanic, even if we're not explicitly told the result of a query, we can still determine that something exists in the database if the query runs between the backend receiving the request and responding to it. Let's create a mockup function to show this behaviour:
+We can suspect that the time it takes for a query to resolve is different if a certain data exists. Using this mechanic, even if we're not explicitly told the result of a query, we can still determine that something exists in the database if the query runs between the backend receiving the request and responding to it. Let's create a mockup function to show this behaviour:
 
 ```python
 from flask import Flask, request
@@ -75,29 +73,23 @@ We're not authenticated, so on the surface it would seem that there is no way to
 
 "Ok, coolbeans, does it work though?" Yeah, we can demo this by creating a small application that works as described. If we now use the mock database created, and hook it to this API, we can see that emails that exist in the database give us different times to resolve than emails that do not exist in the database. 
 
-!! IMAGE !!
+{{<figure src="/images/emails_latency.png"  class="blog-img wide-img">}}
 
-Alright! But wait, the times look a bit off. Shouldn't they be grouped a bit more tightly together? Surely the variance in latency isn't that great between runs? We can measure it by taking bigger sample sizes ..
+And it seems to work! We can roughly see, which emails are registered and which are not. The latencies vary a lot in relation to each other, however. I suspect that it's not only because of normal variance in the system, but has to do somewhat also with the lengths of the emails. We can better determine if an email is used by modifying it slightly to one that's highly unlikely to exist, but not too dissimiliar from the original, and measure their latencies against each other. We will look into this later on this article.
 
-!! IMAGE !!
-
-.. and notice, that indeed, the variance isn't "that great." So why do the latencies look different between different emails? It's to do with length. Different lengths in queries & results result in different resolving times in the query. We can see that when the length of the string we're looking for rises, the time it takes for the query to resolve goes up aswell:
-
-!! IMAGE !!
-
-Now that we have an understanding of how to peek under the surface, let's see if we can find a real application to test this with.
+ Now that we have an understanding of how to peek under the surface, let's see if we can find a real application to test this with.
 
 ## Revealing secrets from beneath the surface, in practice {#techniques}
 
-Because of this new-found fascination in timing stuff, I happened to unlock a new neural link in my head with the following example.
+Because of this new-found fascination in timing stuff, I happened to unlock a new neural link in my head and find the following example.
 
-To understand the context, unless you're Finnish, I am going to have to explain what this site is. It's called irc-gallera, and it lives in irc-galleria.net. IRC-Galleria is a Finnish social media-like site that was originally created for users of IRC-chats to share photos and interact with each other. It used to be really popular in the early 2000s, offering features like user profiles, photo albums, comments, and forums. Over time though, its popularity declined due to the rise of global social media platforms that we all know like Facebook and Instagram. 
+To understand the context, unless you're Finnish, I am going to have to explain what this site is. It's called irc-galleria, and it lives in irc-galleria.net. IRC-Galleria is a Finnish social media-like site that was originally created for users of IRC-chats to share photos and interact with each other. It used to be really popular in the early 2000s, offering features like user profiles, photo albums, comments, and forums. Over time though, its popularity declined due to the rise of global social media platforms that we all know like Facebook and Instagram. 
 
-It still exists today, but is mostly used by bots & millenials. I was visiting it for nostalgia purposes, when I noticed something very interesting. You can browse the pictures posted to the site as a catalog of twenty by visiting: ```https://irc-galleria.net/pictures/new?page=1```
+It still exists today, but is mostly used by bots & millenials. I was visiting it for nostalgia purposes, when I noticed something very interesting. You can browse the pictures posted to the site as a catalogue of twenty by visiting: ```https://irc-galleria.net/pictures/new?page=1```
 
 Each page can be visited by adjusting the `?page` URL parameter. But as you visit some of the later pages, like `page=1337` or even `page=133337`, you'll notice that the website loads very, very slow. What's going on?
 
-As we're dealing with a black-box, and can't pop the hood open and take a look at it ourselves, we're gonna have to hypothize. A sane way to do this cataloging would be to take the photos that are in range `n..n+20`, where `n` is the page number. It could look something like this:
+As we're dealing with a black-box, and can't pop the hood open and take a look at it ourselves, we're gonna have to hypothize. A sane way to do this cataloguing would be to take the photos that are in range `n..n+20`, where `n` is the page number. It could look something like this:
 
 ```sql
 SELECT * 
@@ -114,20 +106,32 @@ ORDER BY image_id
 LIMIT 20;
 ```
 
-Where `offset ?` can be set to something like `(n*20) - 1`. For page 4, this would mean offset of 79. But if we look at the time it takes to resolve these requests, we can kinda guess something is off here.
+Where `offset` can be set to something like `(n*20) - 1`. For page 4, this would mean offset of 79. But if we look at the time it takes to resolve these requests, we can kinda guess something is off here.
 
-!! IMAGE HERE !!
+{{<figure src="/images/IRC_Galleria_latency.png" class="blog-img" >}}
 
 We can see that the resolve time of the request rises in accordance to the page number, which would implicate that the images are first all loaded into the memory, and then programmatically pruned to get the last 20. This is slow. It could look something like this:
 
-!! CODE HERE !!
-
+```python
+    per_page = 20
+    offset   = (page - 1) * per_page
+    results  = database_results[ :offset + per_page ][ -per_page: ]
+```
 
 While we can't get an actual look inside the hood, from the way the pages load we can guess-timate how the engine is built. This means we have indirect information exposure, and while it isn't that useful in this example, we can come up with cases where this kind of information exposure could be potentially "a bad thing". 
 
+### NOTE ABOUT THE IRC GALLERY 
+
+So while getting the figure above, I went from ID 0 to ID 30,000 and noticed something peculiar. Around the pages where we cross autumn of 2011 with the picture dates, the gradual increase of the time it takes for the page to load jumps up to near 30, and stays almost at that until the end of the pages. 
+
+{{<figure src="/images/Anomaly.png" class="blog-img wide-img">}}
+
+I will be completely transparent with you -- I don't know why this happens. My theory is, that the way the backend or database handles images past a certain point. This could be due to the storage for the images being elsewhere, as I said, I honestly have no idea. Until that point, which is around page `27331`, they do grow lineary though, so I do not think this completely invalidates the findings above. When I first came to find this, I only checked the last page & the first page, interpolated and deemed it grew in increments that represented somewhat linear flow. As an apology, have this meme I made when I first found it:
+
+{{<figure src="/images/FunnyLatencyMeme.png"  class="blog-img wide-img">}}
+
 
 ## Can we make it a security issue? {#attack-model}
-
 
 ```
 [TQN - 13/12/2024, 17:15]
@@ -141,7 +145,7 @@ and then trying to replicate it in my dusty attic
 
 After being kindly convinced that mining user-information & other data out of real world, production applications would be impossible, I wanted to find an application where we could actually leverage this method for real world impact.
 
-I decided to use a bugbounty engagement as the subject for this research. Unfortunately, even though the following example was "accepted" as a P5/Informational without the aim to fix it, public disclosure wasn't accepted. I will be refering to the vendor as `[REDACTED]`. 
+I decided to use a bugbounty engagement as the subject for this research. Unfortunately, even though the following example was "accepted" as a P5/Informational without the aim to fix it, public disclosure wasn't accepted. I will be referring to the vendor as `[REDACTED]`. 
 
 I had previously reported to `[REDACTED]` an email-enumeration from their `forgot your password?` functionality. Their API would produce an error on the site if the email was not in use, and display the correct `"We've sent you an email to reset the password, if this email has been registered to an account"` if an email was in use. Late 2024 `[REDACTED]` decided to build a new login system, and as such, this bug has been fixed.
 
@@ -168,7 +172,7 @@ Slow enough to reveal secrets? yeah! We can see, that there's a clear difference
 
 {{< figure src="/images/api_latency.png" class="blog-img" >}}
 
-We can see that with manual testing that the email that has been registered resolves in the API ~200ms slower than the email that has not been registered on the site. We don't even have to look at the response -- as long as it's 200 & accepted, we know they sent out an email if the address is valid. We can, through the time it takes to resolve the request, enumarate which emails are already registered on the site.
+We can see that with manual testing that the email that has been registered resolves in the API ~200ms slower than the email that has not been registered on the site. We don't even have to look at the response -- as long as it's 200 & accepted, we know they sent out an email if the address is valid. We can, through the time it takes to resolve the request, enumerate which emails are already registered on the site.
 
 Dusty attic gains 1 point. Score is now one to nil.  
 
@@ -238,15 +242,19 @@ def leetify( email ):
     return reconstructed
 ```
 
-With already these functionalities it's possible to start looking at the differences between different emails. See this code for further implementation.
+With already these functionalities it's possible to start looking at the differences between different emails. See this code for further implementation:
 
 `https://github.com/Vsimpro/esc-labs/blob/main/scripts/enumeration.py`
 
-Looking at the results it gives, it's clear there's a way to differentiate between email addresses that are registered, and the ones that are not. Email enumeration achieved!  
+We can then run the script against this live system, and see how accurate we can get. For the screenshot below I modified the script to check if the email is registered by making a separate list to compare to. It's indicated by the second column, stating True for registered and False for unregistered.
+
+{{< figure src="/images/latency_script.png" class="blog-img" >}}
+
+Looking at the results it gives, it's clear there's a way to differentiate between email addresses that are registered, and the ones that are not. The emails that are not registered either fall shy of 1.0, or are just barely on it. The emails that _are_ registered produce values well over 1.25. **Email enumeration achieved!**  
 
 ## Possible mitigation? {#discussion}
 
-Let's take another look at what we can hypothize happening in the backend. Let's look at it in the context of a flask websrever function.
+Let's take another look at what we can hypothize happening in the backend. Let's look at it in the context of a flask webserver function.
 
 ```python
 
@@ -263,7 +271,7 @@ Let's take another look at what we can hypothize happening in the backend. Let's
     ...
 ```
 
-We can see that the part which is causing the measurable delay is the checking & sending of the email. In theory, we could offload this in somehwat~ consistent time, for example pushing it to RabbitMQ or another job queue.
+We can see that the part which is causing the measurable delay is the checking & sending of the email. In theory, we could offload this in somewhat~ consistent time, for example pushing it to RabbitMQ or another job queue.
 
 ```python
 
@@ -349,13 +357,15 @@ def get_user():
     return result, 200
 ```
 
+We want to return early, to reduce the compute time. This control of flow minimizes the risk for this attack vector.
+
 ## Conclusions {#conclusions}
 
 We can reveal all kinds of things, if we really pay close attention to details! 
 
-By measuring the small details, we can infer how a backend processes a request, whether data exists in a database, or even what ports are open. These are "attacks" that do not rely on exploiting the traditional security flaws, but rather can be exploited through understanding the sublte behavior of a system.
+By measuring the small details, we can infer how a backend processes a request, whether data exists in a database, or even what ports are open. These are "attacks" that do not rely on exploiting the traditional security flaws, but rather can be exploited through understanding the subtle behaviour of a system.
 
-Even in the production environments, where latencies vary and network noise is gratly present, these techniques can still be observed and leveraged. Even in the dusty attics of real-world applications.
+Even in the production environments, where latencies vary and network noise is greatly present, these techniques can still be observed and leveraged. Even in the dusty attics of real-world applications.
 
 We can see that mitigation isn't impossible, but needs some thought. Trying to strive for code that runs on O(1) time is noble in any case, but can in this case serve the security as well. 
 
