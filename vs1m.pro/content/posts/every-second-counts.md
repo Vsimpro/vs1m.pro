@@ -252,6 +252,21 @@ We can then run the script against this live system, and see how accurate we can
 
 Looking at the results it gives, it's clear there's a way to differentiate between email addresses that are registered, and the ones that are not. The emails that are not registered either fall shy of 1.0, or are just barely on it. The emails that _are_ registered produce values well over 1.25. **Email enumeration achieved!**  
 
+## Why is email enumeration an issue? {#email-enum}
+
+Email enumeration is a type of attack, in which it's possible for an malicious actor to enumerate a list of emails used for accounts in a system. Why does it matter?
+
+- Users of a system will be vulnerable to spearphishing
+Because it's possible to get a list of emails that are registered to a service, it's possible to launch a targeted phishing campaign. 
+- Users of a system can be now more vulnerable to account takeover attempts
+With the list of emails it's possible to do more targeted attempts of account takeover on services.
+- Chaining a vulnerability in which an accounts email is needed 
+There could be an IDOR in which you can view other accounts data with a valid email address. For this, you'd need a valid set of emails, which could be possible to get through email enumeration attacks.
+
+Valid lists of emails are worth money to criminals. [In 2023](https://www.bbc.com/news/technology-64153381), hackers were able to scrape emails of 400 million Twitter users. Lists like these, where a site has been scraped for emails go for sale on sites like BreachForums constantly. 
+
+To ensure your security posture doesn't appear weak, the possibility for email enumeration is something you should consider mitigating. Let's take a look at how this could be achieved.
+
 ## Possible mitigation? {#discussion}
 
 Let's take another look at what we can hypothize happening in the backend. Let's look at it in the context of a flask webserver function.

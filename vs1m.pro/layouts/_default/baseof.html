@@ -15,7 +15,7 @@
   </nav>
 
     <div class="table-of-contents">
-      <h2>
+      <h2 class="toc-header">
         Table of contents
       </h2>
       <ul id="table">
@@ -25,10 +25,11 @@
     {{ block "main" . }} 
     {{ end }}
     
-    <a class="back" href="#"> back to up </a>
+
+    
     <!-- Footer Section -->
     <footer>
-      <p>&copy; {{ now.Format "2006" }} {{ .Site.Title }}. All Rights Reserved.</p>
+      <p><a class="back" href="#">go back up</a>&nbsp; &copy; {{ now.Format "2006" }} {{ .Site.Title }}. All Rights Reserved. </p>
     </footer>
 
   </div>
@@ -70,13 +71,17 @@ h1,h2,h3 {
 }
 
 h1 {
-  font-size: xx-large;
+  font-size: xxx-large;
 }
 
 h3 {
   font-size: large;
   border-bottom: none;
   margin-top: 20px;
+}
+
+.toc-header {
+  text-decoration: none;
 }
 
 ul {

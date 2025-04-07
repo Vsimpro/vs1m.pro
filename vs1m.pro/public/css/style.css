@@ -264,13 +264,20 @@ aside {
 }
 
 .back:hover {
-
     background-color: var(--tangerine);
 }
 
 .blog-img {
     align-self:   center;
     justify-self: center;
+}
+
+@supports (-moz-appearance: none) {
+    .blog-img img{
+        width: 800px;
+        background-color: red;
+    }
+    
 }
 
 @media all and (orientation:portrait) {

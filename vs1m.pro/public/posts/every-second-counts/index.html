@@ -15,7 +15,7 @@
   </nav>
 
     <div class="table-of-contents">
-      <h2>
+      <h2 class="toc-header">
         Table of contents
       </h2>
       <ul id="table">
@@ -211,6 +211,18 @@ and then trying to replicate it in my dusty attic
 </figure>
 
 <p>Looking at the results it gives, it&rsquo;s clear there&rsquo;s a way to differentiate between email addresses that are registered, and the ones that are not. The emails that are not registered either fall shy of 1.0, or are just barely on it. The emails that <em>are</em> registered produce values well over 1.25. <strong>Email enumeration achieved!</strong></p>
+<h2 id="email-enum">Why is email enumeration an issue?</h2>
+<p>Email enumeration is a type of attack, in which it&rsquo;s possible for an malicious actor to enumerate a list of emails used for accounts in a system. Why does it matter?</p>
+<ul>
+<li>Users of a system will be vulnerable to spearphishing
+Because it&rsquo;s possible to get a list of emails that are registered to a service, it&rsquo;s possible to launch a targeted phishing campaign.</li>
+<li>Users of a system can be now more vulnerable to account takeover attempts
+With the list of emails it&rsquo;s possible to do more targeted attempts of account takeover on services.</li>
+<li>Chaining a vulnerability in which an accounts email is needed
+There could be an IDOR in which you can view other accounts data with a valid email address. For this, you&rsquo;d need a valid set of emails, which could be possible to get through email enumeration attacks.</li>
+</ul>
+<p>Valid lists of emails are worth money to criminals. <a href="https://www.bbc.com/news/technology-64153381">In 2023</a>, hackers were able to scrape emails of 400 million Twitter users. Lists like these, where a site has been scraped for emails go for sale on sites like BreachForums constantly.</p>
+<p>To ensure your security posture doesn&rsquo;t appear weak, the possibility for email enumeration is something you should consider mitigating. Let&rsquo;s take a look at how this could be achieved.</p>
 <h2 id="discussion">Possible mitigation?</h2>
 <p>Let&rsquo;s take another look at what we can hypothize happening in the backend. Let&rsquo;s look at it in the context of a flask webserver function.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
@@ -330,10 +342,11 @@ and then trying to replicate it in my dusty attic
   </article>
 
     
-    <a class="back" href="#"> back to up </a>
+
+    
     
     <footer>
-      <p>&copy; 2025 vs1m.pro. All Rights Reserved.</p>
+      <p><a class="back" href="#">go back up</a>&nbsp; &copy; 2025 vs1m.pro. All Rights Reserved. </p>
     </footer>
 
   </div>
@@ -375,13 +388,17 @@ h1,h2,h3 {
 }
 
 h1 {
-  font-size: xx-large;
+  font-size: xxx-large;
 }
 
 h3 {
   font-size: large;
   border-bottom: none;
   margin-top: 20px;
+}
+
+.toc-header {
+  text-decoration: none;
 }
 
 ul {
