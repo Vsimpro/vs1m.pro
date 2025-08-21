@@ -9,71 +9,79 @@
 </head>
 <body>
 
+    <span id="notif" class="notif">
+        <p>
+            <h2> Hey mobile user! </h2>
+            You may go ahead, but beware, this blog is optimized for desktop! If you see rendering quirks, such as partly hidden codeblocks, please try viewing the site with a desktop
+            <br><br> Thanks for understanding! <br><br>
+            <button class="notifbutton"> close </button>
+        </p>
+    </span>
+
+    <div class="pseudo-body">
         <div class="main">
-            
-            
-            <header>
-                <nav>
-                    <ul class="nav-ul">
-                        <p class="special">my other stuff ->&nbsp</p>
-                        <li class="nav-li"><a href="https://vsim.xyz">/vsim.xyz/index.html</a></li>
-                        <li class="nav-li"><a href="https://kiosk.vsim.xyz">/vsim.xyz/kiosk.html</a></li>
-                        <li class="nav-li"><a href="https://github.com/Vsimpro">/github.com/Vsimpro</a></li>
-                    </ul>
-                </nav>
-            </header>
-
-            
-            <div class="aboutme-grid">
-                <div class="aboutme">
-                    <p>
-                        <h2> Hello World! </h2>
-                        I am Ville, known online as <strong>Vsimpro</strong> (or <strong>Vs1m</strong> for short). <br>
-                        I'm a cybersecurity enthusiast and developer with a deep interest in automation, security research, and all things tech. 
-                        <br><br>
-                        By day, I work in cybersecurity, and by night, I build tools, experiment with new technologies, and refine my coding skills. While I use a suite of languages, but my first love is Python. As a nerd at heart, I'm currently pursuing both BBA and BSc in Computer Science, balancing studies with my passion for building useful tech & tools. This website is the hub for my projects and thoughts to inspire all the fellow enthusiasts — or at the very least entertain you with my misadventures.
-                        <br><br>
-                        Want to chitchat, or collab? You can find me here:
-                        <ul>
-                            <li>Discord &nbsp&nbsp&nbsp : <span style="user-select:all">Vs1m</span> / <span style="user-select:all">Vsimpro</span></li> 
-                            <li>Twitter/x  &nbsp : <a target="_blank" href="https://x.com/Vsimpro" style="text-decoration: underline;">x.com/Vsimpro</a></li>
-                            <li>Github  &nbsp&nbsp&nbsp&nbsp : <a target="_blank" href="https://github.com/Vsimpro" style="text-decoration: underline;">github.com/Vsimpro</a></li>
-                        </ul>
-                    </p>
-                </div>
-                <div class="aboutme-pic">
-                    <img src="/images/profile.jpg" width="256">
-                </div>
-            </div>
-
-            <h2>
-            Here's my articles:
-            </h2>
-            
-            <div class="blog-grid">
                 
-                    
-                    
-                    <div class="blog-card">
-                        <a class="title" href="/posts/every-second-counts/">
-                            <h3>
-                                Every Second Counts
-                            </h3>
-                            <p>Revealing secrets of software with a watch</p>
-                            <a class="call2action" href="/posts/every-second-counts/">read the post!</a>
-                        </a>
+                <div class="aboutme-grid">
+                    <div class="aboutme">
+                        <p>
+                            <h2> Hello World!! </h2>
+                            I am Ville, known online as <strong>Vsimpro</strong> (or <strong>Vs1m</strong> for short). <br>
+                            I'm a cybersecurity enthusiast and developer with a deep interest in automation, security research, and all things tech. 
+                            <br><br>
+                            By day, I work in cybersecurity, and by night, I build tools, experiment with new technologies, and refine my coding skills. While I use a suite of languages, but my first love is Python. As a nerd at heart, I'm currently pursuing both BBA and BSc in Computer Science, balancing studies with my passion for building useful tech & tools. This website is the hub for my projects and thoughts to inspire all the fellow enthusiasts — or at the very least entertain you with my misadventures.
+                            <br><br>
+                            Want to chitchat, or collab? You can find me here:
+                            <ul>
+                                <li>Discord &nbsp&nbsp&nbsp : <span style="user-select:all">Vs1m</span> / <span style="user-select:all">Vsimpro</span></li> 
+                                <li>Twitter/x  &nbsp : <a target="_blank" href="https://x.com/Vsimpro" style="text-decoration: underline;">x.com/Vsimpro</a></li>
+                                <li>Github  &nbsp&nbsp&nbsp&nbsp : <a target="_blank" href="https://github.com/Vsimpro" style="text-decoration: underline;">github.com/Vsimpro</a></li>
+                            </ul>
+                        </p>
                     </div>
+                </div>
+
+                <footer>
+                    <p>&copy; 2025 vs1m.pro</p>
+                </footer>
+            </div> 
+            <div class="main lower">
+                <h2>
+                    Here's my articles:
+                </h2>
                     
-                    
-                
-                    
-                
+                    <div class="blog-grid">
+                        
+                            
+                            
+                            <div class="blog-card">
+                                <a class="title" href="/posts/every-second-counts/">
+                                    <h3>
+                                        Every Second Counts
+                                    </h3>
+                                    <p>Revealing secrets of software with a watch</p>
+                                    <a class="call2action" href="/posts/every-second-counts/">read the post!</a>
+                                </a>
+                            </div>
+                            
+                            
+                        
+                            
+                        
+                    </div>
+            </div>
+            <div class="aboutme-pic">
+                <img class="prof-img" src="https://vsim.xyz/img/proffa.png" width="256">
             </div>
 
-            <footer>
-                <p>&copy; 2025 vs1m.pro</p>
-            </footer>
-
-        </div>    
+        </div>
+    </div>
 </body>
 </html>
+<script>
+
+var notifbox = document.getElementById("notif")
+notifbox.addEventListener("click", function (){
+    notifbox.style.display = "none"
+})
+
+</script>
