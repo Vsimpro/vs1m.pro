@@ -394,7 +394,7 @@ aside {
 @media all and (orientation:portrait) {
     .notif {
         display:grid;
-        width: 400px;
+        width: 300px;
 
         color: white;
         background-color: blue;
@@ -504,3 +504,4 @@ aside {
         background-color: var(--jet-darker);
     }
 }
+
