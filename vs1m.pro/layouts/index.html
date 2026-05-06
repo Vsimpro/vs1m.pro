@@ -57,13 +57,14 @@
                             {{ if not .IsSection }}
                             
                             <div class="blog-card">
-                                <a class="title" href="{{ .RelPermalink }}">
+                                <a class="title" style="text-decoration:none" href="{{ .RelPermalink }}">
                                     <h3>
                                         {{ .Title }}
                                     </h3>
                                     <p>{{ .Summary }}</p>
-                                    <a class="call2action" href="{{ .RelPermalink }}">read the post!</a>
+                                    
                                 </a>
+                                <a class="call2action" href="{{ .RelPermalink }}">read the post!</a>
                             </div>
                             
                             {{ end }}
@@ -72,6 +73,11 @@
             </div>
             <div class="aboutme-pic">
                 <img class="prof-img" src="https://vsim.xyz/img/proffa.png" width="256">
+            </div>
+            
+            <div class="main legacy">
+                <h3> legacy articles: </h3>
+                <a href="https://blog.vsim.xyz">blog.vsim.xyz</a>
             </div>
 
         </div>

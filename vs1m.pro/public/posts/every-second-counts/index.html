@@ -23,23 +23,17 @@
     </div>
 
     
-  
-  
   <article class="flex-l flex-wrap justify-between mw8 center ph3">
     <header class="mt4 w-100">
       <aside class="instapaper_ignoref b helvetica tracked ttu">
-          
         Posts
-      </aside><div id="sharing" class="mt3 ananke-socials"></div>
-<h1 class="f1 athelas mt3 mb1">Every Second Counts</h1>
-      
-      
-      
-
-      
-      
+      </aside>
+      <div id="sharing" class="mt3 ananke-socials"></div>
+      <h1 class="f1 athelas mt3 mb1">Every Second Counts</h1>
     </header>
-    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><p>If you&rsquo;ve ever wondered how milliseconds could be used to expose secrets, this one is for you.</p>
+
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l">
+      <p>If you&rsquo;ve ever wondered how milliseconds could be used to expose secrets, this one is for you.</p>
 <p>In this article, I dive into how timing based side-channel attacks can be leveraged in application security. I&rsquo;ll show you how tiny delays in system responses can leak valuable information, like open ports and database records. Let&rsquo;s walk through some theory, and real world examples on actual applications.</p>
 <h3 id="why-i-find-this-subject-exciting">Why I find this subject exciting</h3>
 <p>Hackers love to find &amp; exploit unconventional ways of using technology. The following stuff is no different.</p>
@@ -82,7 +76,7 @@ Some of these calculations take longer time than others, for example comparing t
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;Unauthorized&#34;</span>, <span style="color:#ae81ff">401</span>  
 </span></span></code></pre></div><p>We&rsquo;re not authenticated, so on the surface it would seem that there is no way to check if the email we&rsquo;re looking for exists in the database. However, no matter what our authentication status is, the query is being ran. Because everything else in the function takes roughly the same time each run, the only variance to the time it takes to run the function comes from the database query. This means, that we can measure the time it takes to run the query, by measuring the time it takes from our request to the response coming from the backend.</p>
 <p>&ldquo;Ok, coolbeans, does it work though?&rdquo; Yeah, we can demo this by creating a small application that works as described. If we now use the mock database created, and hook it to this API, we can see that emails that exist in the database give us different times to resolve than emails that do not exist in the database.</p>
-<figure class="blog-img wide-img"><img src="/images/emails_latency.png">
+<figure class="blog-img wide-img"><img src="/images/emails_latency.png"/>
 </figure>
 
 <p>And it seems to work! We can roughly see, which emails are registered and which are not. The latencies vary a lot in relation to each other, however. I suspect that it&rsquo;s not only because of normal variance in the system, but has to do somewhat also with the lengths of the emails. We can better determine if an email is used by modifying it slightly to one that&rsquo;s highly unlikely to exist, but not too dissimiliar from the original, and measure their latencies against each other. We will look into this later on this article.</p>
@@ -106,7 +100,7 @@ Some of these calculations take longer time than others, for example comparing t
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">ORDER</span> <span style="color:#66d9ef">BY</span> image_id
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">LIMIT</span> <span style="color:#ae81ff">20</span>;
 </span></span></code></pre></div><p>Where <code>offset</code> can be set to something like <code>(n*20) - 1</code>. For page 4, this would mean offset of 79. But if we look at the time it takes to resolve these requests, we can kinda guess something is off here.</p>
-<figure class="blog-img"><img src="/images/IRC_Galleria_latency.png">
+<figure class="blog-img"><img src="/images/IRC_Galleria_latency.png"/>
 </figure>
 
 <p>We can see that the resolve time of the request rises in accordance to the page number, which would implicate that the images are first all loaded into the memory, and then programmatically pruned to get the last 20. This is slow. It could look something like this:</p>
@@ -116,11 +110,11 @@ Some of these calculations take longer time than others, for example comparing t
 </span></span></code></pre></div><p>While we can&rsquo;t get an actual look inside the hood, from the way the pages load we can guess-timate how the engine is built. This means we have indirect information exposure, and while it isn&rsquo;t that useful in this example, we can come up with cases where this kind of information exposure could be potentially &ldquo;a bad thing&rdquo;.</p>
 <h3 id="note-about-the-irc-gallery">NOTE ABOUT THE IRC GALLERY</h3>
 <p>So while getting the figure above, I went from ID 0 to ID 30,000 and noticed something peculiar. Around the pages where we cross autumn of 2011 with the picture dates, the gradual increase of the time it takes for the page to load jumps up to near 30, and stays almost at that until the end of the pages.</p>
-<figure class="blog-img wide-img"><img src="/images/Anomaly.png">
+<figure class="blog-img wide-img"><img src="/images/Anomaly.png"/>
 </figure>
 
 <p>I will be completely transparent with you &ndash; I don&rsquo;t know why this happens. My theory is, that the way the backend or database handles images past a certain point. This could be due to the storage for the images being elsewhere, as I said, I honestly have no idea. Until that point, which is around page <code>27331</code>, they do grow lineary though, so I do not think this completely invalidates the findings above. When I first came to find this, I only checked the last page &amp; the first page, interpolated and deemed it grew in increments that represented somewhat linear flow. As an apology, have this meme I made when I first found it:</p>
-<figure class="blog-img wide-img"><img src="/images/FunnyLatencyMeme.png">
+<figure class="blog-img wide-img"><img src="/images/FunnyLatencyMeme.png"/>
 </figure>
 
 <h2 id="attack-model">Can we make it a security issue?</h2>
@@ -149,7 +143,7 @@ and then trying to replicate it in my dusty attic
 </span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>
 </span></span></code></pre></div><p>In both cases, the API response is the same, but an additional computational cost is added if the email is registered. The database query, admittedly, can be a bit too fast to notice a difference of with the added variance in latency that comes from multiple hops. But sending out an email? Slow!</p>
 <p>Slow enough to reveal secrets? yeah! We can see, that there&rsquo;s a clear difference between requests:</p>
-<figure class="blog-img"><img src="/images/api_latency.png">
+<figure class="blog-img"><img src="/images/api_latency.png"/>
 </figure>
 
 <p>We can see that with manual testing that the email that has been registered resolves in the API ~200ms slower than the email that has not been registered on the site. We don&rsquo;t even have to look at the response &ndash; as long as it&rsquo;s 200 &amp; accepted, we know they sent out an email if the address is valid. We can, through the time it takes to resolve the request, enumerate which emails are already registered on the site.</p>
@@ -207,7 +201,7 @@ and then trying to replicate it in my dusty attic
 </span></span></code></pre></div><p>With already these functionalities it&rsquo;s possible to start looking at the differences between different emails. See this code for further implementation:</p>
 <p><code>https://github.com/Vsimpro/esc-labs/blob/main/scripts/enumeration.py</code></p>
 <p>We can then run the script against this live system, and see how accurate we can get. For the screenshot below I modified the script to check if the email is registered by making a separate list to compare to. It&rsquo;s indicated by the second column, stating True for registered and False for unregistered.</p>
-<figure class="blog-img"><img src="/images/latency_script.png">
+<figure class="blog-img"><img src="/images/latency_script.png"/>
 </figure>
 
 <p>Looking at the results it gives, it&rsquo;s clear there&rsquo;s a way to differentiate between email addresses that are registered, and the ones that are not. The emails that are not registered either fall shy of 1.0, or are just barely on it. The emails that <em>are</em> registered produce values well over 1.25. <strong>Email enumeration achieved!</strong></p>
@@ -323,22 +317,16 @@ There could be an IDOR in which you can view other accounts data with a valid em
 <h2 id="notes">Bonus &amp; notes</h2>
 <p>If you wish, you can try out these attacks yourself. I&rsquo;ve created some sample code &amp; labs to try these attacks against into this repository: <code>https://github.com/Vsimpro/esc-labs</code></p>
 <p>I hope you have as fun with them as I have!</p>
-<ul class="pa0">
-  
-</ul>
-<div class="mt6 instapaper_ignoref">
-      
-      
+
+
+      <ul class="pa0">
+      </ul>
+      <div class="mt6 instapaper_ignoref">
       </div>
     </div>
 
     <aside class="w-30-l mt6-l">
-
-
-
-
-</aside>
-
+    </aside>
   </article>
 
     
@@ -346,7 +334,7 @@ There could be an IDOR in which you can view other accounts data with a valid em
     
     
     <footer>
-      <p><a class="back" href="#">go back up</a>&nbsp; &copy; 2025 vs1m.pro. All Rights Reserved. </p>
+      <p><a class="back" href="#">go back up</a>&nbsp; &copy; 2026 vs1m.pro. All Rights Reserved. </p>
     </footer>
 
   </div>

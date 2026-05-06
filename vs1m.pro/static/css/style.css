@@ -130,15 +130,26 @@ body::-webkit-scrollbar {
 }
 
 .lower {
-    width: 50%;
+    width: 60%;
     padding: 0;
     margin:  0;
 
-    padding-left: 2%;
+    padding-left:   1.5%;
+    padding-right:  1%;
     padding-bottom: 2%;
 
     margin-left: 5%;
     margin-top: -2%;
+}
+
+.legacy {
+    width:  25%;
+    
+    margin:  0;
+    padding: 5;
+
+    margin-top:  29.8%;
+    margin-left: 60%;
 }
 
 .aboutme-grid {
@@ -177,7 +188,7 @@ body::-webkit-scrollbar {
 
     display: grid;
 
-    gap: 10px;
+    gap: 8px;
     grid-template-columns: repeat(3, 1fr);
 }
 
@@ -191,14 +202,15 @@ a:hover {
 }
 
 .blog-card {
+    cursor: pointer;
     user-select: none;
     padding: 0;
     margin:  0;
 
-    padding-left:   5%;
-    padding-bottom: 5%;
+    padding-left:   2%;
+    padding-bottom: 4%;
 
-    border-radius: 0px;
+    border-radius: 1px;
     border: 1px solid var(--jet-dark);
 
     box-shadow: 
@@ -219,12 +231,11 @@ x.blog-card:hover {
 }
 
 .call2action {
+
     padding: 5px;
 
     border-radius: 0px;
     font-weight: bold;
-
-    xborder: 1px solid;
 
     background-color: var(--off-white);
 }
