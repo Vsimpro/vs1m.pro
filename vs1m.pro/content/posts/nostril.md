@@ -1,6 +1,6 @@
 ---
 title: "Malware and Other Stuff"
-summary: "Our malware mitigation sucks -- **Nostr** as a comm channel"
+summary: "Robust Relays -- the **Nostr** as a comm channel for malware"
 draft: false
 ---
 
