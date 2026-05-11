@@ -2,16 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://localhost:1313/categories/</loc>
+    <loc>https://vs1m.pro/categories/</loc>
   </url><url>
-    <loc>http://localhost:1313/posts/every-second-counts/</loc>
+    <loc>https://vs1m.pro/posts/every-second-counts/</loc>
   </url><url>
-    <loc>http://localhost:1313/posts/nostril/</loc>
+    <loc>https://vs1m.pro/posts/nostril/</loc>
   </url><url>
-    <loc>http://localhost:1313/posts/</loc>
+    <loc>https://vs1m.pro/posts/</loc>
   </url><url>
-    <loc>http://localhost:1313/tags/</loc>
+    <loc>https://vs1m.pro/tags/</loc>
   </url><url>
-    <loc>http://localhost:1313/</loc>
+    <loc>https://vs1m.pro/</loc>
   </url>
 </urlset>
