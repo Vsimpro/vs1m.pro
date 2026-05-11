@@ -55,7 +55,7 @@ Some of these calculations take longer time than others, for example comparing t
 <h2 id="theory">Mining data with latencies, in theory</h2>
 <p>I have prepared a database with mock data into it. We can execute a query to find a certain email from the database, mimicking an application looking for an user, for example. The search itself will take time, because the rows are not indexed. But the returning of the results is what is the most interesting here. In theory, if a query is empty, it resolves quicker than if the query returns data in it.</p>
 <p>We can suspect that the time it takes for a query to resolve is different if a certain data exists. Using this mechanic, even if we&rsquo;re not explicitly told the result of a query, we can still determine that something exists in the database if the query runs between the backend receiving the request and responding to it. Let&rsquo;s create a mockup function to show this behaviour:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> flask <span style="color:#f92672">import</span> Flask, request
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> flask <span style="color:#f92672">import</span> Flask, request
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">@app.route</span>(<span style="color:#e6db74">&#34;/search&#34;</span>, methods<span style="color:#f92672">=</span>[ <span style="color:#e6db74">&#34;GET&#34;</span> ])
@@ -76,7 +76,7 @@ Some of these calculations take longer time than others, for example comparing t
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;Unauthorized&#34;</span>, <span style="color:#ae81ff">401</span>  
 </span></span></code></pre></div><p>We&rsquo;re not authenticated, so on the surface it would seem that there is no way to check if the email we&rsquo;re looking for exists in the database. However, no matter what our authentication status is, the query is being ran. Because everything else in the function takes roughly the same time each run, the only variance to the time it takes to run the function comes from the database query. This means, that we can measure the time it takes to run the query, by measuring the time it takes from our request to the response coming from the backend.</p>
 <p>&ldquo;Ok, coolbeans, does it work though?&rdquo; Yeah, we can demo this by creating a small application that works as described. If we now use the mock database created, and hook it to this API, we can see that emails that exist in the database give us different times to resolve than emails that do not exist in the database.</p>
-<figure class="blog-img wide-img"><img src="/images/emails_latency.png"/>
+<figure class="blog-img wide-img"><img src="/images/emails_latency.png">
 </figure>
 
 <p>And it seems to work! We can roughly see, which emails are registered and which are not. The latencies vary a lot in relation to each other, however. I suspect that it&rsquo;s not only because of normal variance in the system, but has to do somewhat also with the lengths of the emails. We can better determine if an email is used by modifying it slightly to one that&rsquo;s highly unlikely to exist, but not too dissimiliar from the original, and measure their latencies against each other. We will look into this later on this article.</p>
@@ -87,7 +87,7 @@ Some of these calculations take longer time than others, for example comparing t
 <p>It still exists today, but is mostly used by bots &amp; millenials. I was visiting it for nostalgia purposes, when I noticed something very interesting. You can browse the pictures posted to the site as a catalogue of twenty by visiting: <code>https://irc-galleria.net/pictures/new?page=1</code></p>
 <p>Each page can be visited by adjusting the <code>?page</code> URL parameter. But as you visit some of the later pages, like <code>page=1337</code> or even <code>page=133337</code>, you&rsquo;ll notice that the website loads very, very slow. What&rsquo;s going on?</p>
 <p>As we&rsquo;re dealing with a black-box, and can&rsquo;t pop the hood open and take a look at it ourselves, we&rsquo;re gonna have to hypothize. A sane way to do this cataloguing would be to take the photos that are in range <code>n..n+20</code>, where <code>n</code> is the page number. It could look something like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span> 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span> 
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">FROM</span>  images
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">WHERE</span> image_id <span style="color:#f92672">&gt;=</span> (
@@ -100,21 +100,21 @@ Some of these calculations take longer time than others, for example comparing t
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">ORDER</span> <span style="color:#66d9ef">BY</span> image_id
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">LIMIT</span> <span style="color:#ae81ff">20</span>;
 </span></span></code></pre></div><p>Where <code>offset</code> can be set to something like <code>(n*20) - 1</code>. For page 4, this would mean offset of 79. But if we look at the time it takes to resolve these requests, we can kinda guess something is off here.</p>
-<figure class="blog-img"><img src="/images/IRC_Galleria_latency.png"/>
+<figure class="blog-img"><img src="/images/IRC_Galleria_latency.png">
 </figure>
 
 <p>We can see that the resolve time of the request rises in accordance to the page number, which would implicate that the images are first all loaded into the memory, and then programmatically pruned to get the last 20. This is slow. It could look something like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>    per_page <span style="color:#f92672">=</span> <span style="color:#ae81ff">20</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>    per_page <span style="color:#f92672">=</span> <span style="color:#ae81ff">20</span>
 </span></span><span style="display:flex;"><span>    offset   <span style="color:#f92672">=</span> (page <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> per_page
 </span></span><span style="display:flex;"><span>    results  <span style="color:#f92672">=</span> database_results[ :offset <span style="color:#f92672">+</span> per_page ][ <span style="color:#f92672">-</span>per_page: ]
 </span></span></code></pre></div><p>While we can&rsquo;t get an actual look inside the hood, from the way the pages load we can guess-timate how the engine is built. This means we have indirect information exposure, and while it isn&rsquo;t that useful in this example, we can come up with cases where this kind of information exposure could be potentially &ldquo;a bad thing&rdquo;.</p>
 <h3 id="note-about-the-irc-gallery">NOTE ABOUT THE IRC GALLERY</h3>
 <p>So while getting the figure above, I went from ID 0 to ID 30,000 and noticed something peculiar. Around the pages where we cross autumn of 2011 with the picture dates, the gradual increase of the time it takes for the page to load jumps up to near 30, and stays almost at that until the end of the pages.</p>
-<figure class="blog-img wide-img"><img src="/images/Anomaly.png"/>
+<figure class="blog-img wide-img"><img src="/images/Anomaly.png">
 </figure>
 
 <p>I will be completely transparent with you &ndash; I don&rsquo;t know why this happens. My theory is, that the way the backend or database handles images past a certain point. This could be due to the storage for the images being elsewhere, as I said, I honestly have no idea. Until that point, which is around page <code>27331</code>, they do grow lineary though, so I do not think this completely invalidates the findings above. When I first came to find this, I only checked the last page &amp; the first page, interpolated and deemed it grew in increments that represented somewhat linear flow. As an apology, have this meme I made when I first found it:</p>
-<figure class="blog-img wide-img"><img src="/images/FunnyLatencyMeme.png"/>
+<figure class="blog-img wide-img"><img src="/images/FunnyLatencyMeme.png">
 </figure>
 
 <h2 id="attack-model">Can we make it a security issue?</h2>
@@ -129,7 +129,7 @@ and then trying to replicate it in my dusty attic
 <p>I decided to use a bugbounty engagement as the subject for this research. Unfortunately, even though the following example was &ldquo;accepted&rdquo; as a P5/Informational without the aim to fix it, public disclosure wasn&rsquo;t accepted. I will be referring to the vendor as <code>[REDACTED]</code>.</p>
 <p>I had previously reported to <code>[REDACTED]</code> an email-enumeration from their <code>forgot your password?</code> functionality. Their API would produce an error on the site if the email was not in use, and display the correct <code>&quot;We've sent you an email to reset the password, if this email has been registered to an account&quot;</code> if an email was in use. Late 2024 <code>[REDACTED]</code> decided to build a new login system, and as such, this bug has been fixed.</p>
 <p>After testing the new site for a bit, I noticed, that <code>[REDACTED]</code> sends out an email <em>every</em> time you request a password reset. We can create a pseudo-code of the mechanism in the backend:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">...</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">...</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>user_email <span style="color:#f92672">=</span> request<span style="color:#f92672">.</span>data[<span style="color:#e6db74">&#34;email&#34;</span>] <span style="color:#75715e"># Parse JSON from HTTP Request</span>
 </span></span><span style="display:flex;"><span>
@@ -143,13 +143,13 @@ and then trying to replicate it in my dusty attic
 </span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>
 </span></span></code></pre></div><p>In both cases, the API response is the same, but an additional computational cost is added if the email is registered. The database query, admittedly, can be a bit too fast to notice a difference of with the added variance in latency that comes from multiple hops. But sending out an email? Slow!</p>
 <p>Slow enough to reveal secrets? yeah! We can see, that there&rsquo;s a clear difference between requests:</p>
-<figure class="blog-img"><img src="/images/api_latency.png"/>
+<figure class="blog-img"><img src="/images/api_latency.png">
 </figure>
 
 <p>We can see that with manual testing that the email that has been registered resolves in the API ~200ms slower than the email that has not been registered on the site. We don&rsquo;t even have to look at the response &ndash; as long as it&rsquo;s 200 &amp; accepted, we know they sent out an email if the address is valid. We can, through the time it takes to resolve the request, enumerate which emails are already registered on the site.</p>
 <p>Dusty attic gains 1 point. Score is now one to nil.</p>
 <p>Let&rsquo;s script this to prove we can use this to enumerate emails programmatically. First we need to create the reset request to the backend:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> requests
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> requests
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">#   Reset password </span>
@@ -168,14 +168,14 @@ and then trying to replicate it in my dusty attic
 </span></span><span style="display:flex;"><span>    
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> response
 </span></span></code></pre></div><p>After which we can measure the time it takes for the HTTP request to resolve. We can call the function and take a <code>time</code> before the call and after the call.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> time 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> time 
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># Get Latency of the request, in milliseconds.</span>
 </span></span><span style="display:flex;"><span>start    <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time() <span style="color:#f92672">*</span> <span style="color:#ae81ff">1_000</span> 
 </span></span><span style="display:flex;"><span>response <span style="color:#f92672">=</span> send_reset_password( email )<span style="color:#f92672">.</span>text <span style="color:#75715e"># Reset-request function</span>
 </span></span><span style="display:flex;"><span>stop     <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time() <span style="color:#f92672">*</span> <span style="color:#ae81ff">1_000</span>
 </span></span></code></pre></div><p>These latencies &amp; timings are of no use, if they&rsquo;re not stored. Let&rsquo;s handle that too:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>TIMINGS : dict <span style="color:#f92672">=</span> {}
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>TIMINGS : dict <span style="color:#f92672">=</span> {}
 </span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">global</span> TIMINGS
@@ -186,7 +186,7 @@ and then trying to replicate it in my dusty attic
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>TIMINGS[ email ]<span style="color:#f92672">.</span>append( stop <span style="color:#f92672">-</span> start )
 </span></span></code></pre></div><p>As I mentioned before, different length of strings take different times to handle in the backend. To ensure the different lengths of the emails don&rsquo;t interfere with the measurements, we must test an email against a baseline. We can create the baseline by changing a few characters in the email, still keeping it generally in tact, but trying to change it into a format that wouldn&rsquo;t appear organically. We can do this by for example changing 1 letter in the domain of the email. <code>doesntexist@gmail.com</code> would then become <code>doesntexist@1m4il.com</code>. Of course someone could register the domain, and create a list of emails, and then register to <code>[REDACTED]</code>&rsquo;s site with them, which would interfere with the testing.. but we can.. generally assume this hasn&rsquo;t happened.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">leetify</span>( email ): 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">leetify</span>( email ): 
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">#   Change Email address into a one that&#39;s most likely non-existing.</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
@@ -201,7 +201,7 @@ and then trying to replicate it in my dusty attic
 </span></span></code></pre></div><p>With already these functionalities it&rsquo;s possible to start looking at the differences between different emails. See this code for further implementation:</p>
 <p><code>https://github.com/Vsimpro/esc-labs/blob/main/scripts/enumeration.py</code></p>
 <p>We can then run the script against this live system, and see how accurate we can get. For the screenshot below I modified the script to check if the email is registered by making a separate list to compare to. It&rsquo;s indicated by the second column, stating True for registered and False for unregistered.</p>
-<figure class="blog-img"><img src="/images/latency_script.png"/>
+<figure class="blog-img"><img src="/images/latency_script.png">
 </figure>
 
 <p>Looking at the results it gives, it&rsquo;s clear there&rsquo;s a way to differentiate between email addresses that are registered, and the ones that are not. The emails that are not registered either fall shy of 1.0, or are just barely on it. The emails that <em>are</em> registered produce values well over 1.25. <strong>Email enumeration achieved!</strong></p>
@@ -219,7 +219,7 @@ There could be an IDOR in which you can view other accounts data with a valid em
 <p>To ensure your security posture doesn&rsquo;t appear weak, the possibility for email enumeration is something you should consider mitigating. Let&rsquo;s take a look at how this could be achieved.</p>
 <h2 id="discussion">Possible mitigation?</h2>
 <p>Let&rsquo;s take another look at what we can hypothize happening in the backend. Let&rsquo;s look at it in the context of a flask webserver function.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">@app.route</span>(<span style="color:#e6db74">&#34;/register/&#34;</span>, methods<span style="color:#f92672">=</span>[ <span style="color:#e6db74">&#34;GET&#34;</span> ])
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span>
@@ -232,7 +232,7 @@ There could be an IDOR in which you can view other accounts data with a valid em
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;Password reset sent if email has a registered user&#34;</span>, <span style="color:#ae81ff">200</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span>
 </span></span></code></pre></div><p>We can see that the part which is causing the measurable delay is the checking &amp; sending of the email. In theory, we could offload this in somewhat~ consistent time, for example pushing it to RabbitMQ or another job queue.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># File: app.py</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
@@ -271,7 +271,7 @@ There could be an IDOR in which you can view other accounts data with a valid em
 </span></span><span style="display:flex;"><span>        send_password_reset_link( user_email ) <span style="color:#75715e"># Send out the link! </span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span>
 </span></span></code></pre></div><p>We must do the check &amp; sending of the email in a separate runtime, to off load the measurable computing time of these tasks. In an API endpoint, where the response doesn&rsquo;t change, this is possible. But what if the response changes based upon the parameters? Let&rsquo;s take a look at an earlier example:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#a6e22e">@app.route</span>(<span style="color:#e6db74">&#34;/search&#34;</span>, methods<span style="color:#f92672">=</span>[ <span style="color:#e6db74">&#34;GET&#34;</span> ])
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#a6e22e">@app.route</span>(<span style="color:#e6db74">&#34;/search&#34;</span>, methods<span style="color:#f92672">=</span>[ <span style="color:#e6db74">&#34;GET&#34;</span> ])
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_user</span>():
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># search?email=</span>
 </span></span><span style="display:flex;"><span>    email <span style="color:#f92672">=</span> request<span style="color:#f92672">.</span>args<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#34;email&#34;</span>)
@@ -288,7 +288,7 @@ There could be an IDOR in which you can view other accounts data with a valid em
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># We&#39;re not authenticated, so we don&#39;t see the result</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;Unauthorized&#34;</span>, <span style="color:#ae81ff">401</span>  
 </span></span></code></pre></div><p>Fixing this function into a form that doesn&rsquo;t reveal any information to unauthenticated is relatively easy. If user is not authenticated, do not make the database query. It would look like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#a6e22e">@app.route</span>(<span style="color:#e6db74">&#34;/search&#34;</span>, methods<span style="color:#f92672">=</span>[ <span style="color:#e6db74">&#34;GET&#34;</span> ])
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#a6e22e">@app.route</span>(<span style="color:#e6db74">&#34;/search&#34;</span>, methods<span style="color:#f92672">=</span>[ <span style="color:#e6db74">&#34;GET&#34;</span> ])
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_user</span>():
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># We&#39;re not authenticated, so we don&#39;t see the result</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> is_authenticated():

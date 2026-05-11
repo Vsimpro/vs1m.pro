@@ -10,10 +10,11 @@
     --sunglow   : #ffcc66;
     --tangerine : #f89057;
     --pink      : #f3767a;
-    --red       : #fa4e4e;
-    --purple    : #CC98CD;
-    --green     : #98cd99;
-    --blue      : #6798cc;
+    --red       : #f61326;
+    --purple    : #c023c3;
+    --green     : #1b8d01;
+    --yellow    : #ff8e04;
+    --blue      : #2f7dd0;
     --teal      : #66cdcd; 
 }
 
@@ -50,12 +51,16 @@
     
 }
 
-p {
+h1, h2, h3, h4, p, ol, ul, .table-of-contents{
     line-height:    1.5;
     max-width: 800px;
     
     margin-left:  auto;
     margin-right: auto;
+}
+
+ol {
+    margin-left: 7%;
 }
 
 body {
@@ -76,6 +81,26 @@ body {
 
 }
 
+
+red {
+    color: var(--red);
+}
+
+green {
+    color: var(--green);
+}
+
+yellow {
+    color: var(--yellow);
+}
+
+blue {
+    color: var(--blue)
+}
+
+purple {
+    color: var(--purple)
+}
 
 body::-webkit-scrollbar {
     display: none;  
@@ -277,6 +302,7 @@ img {
     margin: 0;
     padding: 0;
 
+    margin: auto;
     border-radius: 0px;
 
     border:     2px solid var(--jet-darker);
@@ -314,6 +340,8 @@ img {
 }
 
 pre {
+    max-width: 800px;
+    margin: auto;
     padding: 1%;
     color: var(--off-white);
     background-color: var(--jet-grey);
@@ -321,12 +349,12 @@ pre {
 
 code {
     max-width: 800px;
-    
+
     color: var(--off-white);
     background-color: var(--jet-grey);
 
     padding: 1px;
-    padding-left: 2px;
+    padding-left:  2px;
     padding-right: 2px;
 
 }
@@ -370,6 +398,7 @@ aside {
 }
 
 .blog-img {
+    
     align-self:   center;
     justify-self: center;
 
@@ -403,6 +432,7 @@ aside {
 }
 
 @media all and (orientation:portrait) {
+    
     .notif {
         display:grid;
         width: 300px;
@@ -464,6 +494,11 @@ aside {
         padding-top: 1%;
 
         overflow: hidden;
+    }
+
+    .main, .lower {
+        padding-bottom: 7%;
+        margin-bottom: 7%;
     }
 
     .aboutme-pic {

